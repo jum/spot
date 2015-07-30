@@ -4,7 +4,7 @@
  */
 package spot
 
-type SpotMessage struct {
+type Message struct {
 	ClientUnixTime int64
 	Id             int64
 	MessengerId    string

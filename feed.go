@@ -30,13 +30,13 @@ type SpotFeed struct {
 			TotalCount   int
 			AcivityCount int
 			Messages     struct {
-				Message []SpotMessage
+				Message []Message
 			}
 		}
 	}
 }
 
-func RetrieveMessages(feedID string) (messages []SpotMessage, err error) {
+func RetrieveMessages(feedID string) (messages []Message, err error) {
 	for {
 		var d SpotFeed
 		var resp *http.Response
