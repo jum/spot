@@ -20,3 +20,25 @@ type Message struct {
 	Hidden         int
 	MessageContent string
 }
+
+func MergeMessages(db []Message, n []Message) []Message {
+	for _, e := range n {
+		found := false
+		for _, old := range db {
+			if old.Id == e.Id {
+				found = true
+				break
+			}
+		}
+		if !found {
+			db = append(db, e)
+		}
+	}
+	return db
+}
+
+type MessageTimeSorter []Message
+
+func (p MessageTimeSorter) Len() int           { return len(p) }
+func (p MessageTimeSorter) Less(i, j int) bool { return p[i].UnixTime < p[j].UnixTime }
+func (p MessageTimeSorter) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
