@@ -5,6 +5,7 @@
 package spot
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 
 const (
 	SpotAPI = "https://api.findmespot.com/spot-main-web/consumer/rest-api/2.0/public/feed/%v/message.json?start=%v"
+	DEBUG   = true
 )
 
 type Error struct {
@@ -23,6 +25,15 @@ type Error struct {
 
 func (e Error) Error() string {
 	return fmt.Sprintf("%v: %v", e.Code, e.Text)
+}
+
+type DebugError struct {
+	Err       error
+	DebugBody bytes.Buffer
+}
+
+func (e DebugError) Error() string {
+	return fmt.Sprintf("%s: %s", e.Err, e.DebugBody.Bytes())
 }
 
 type Feed struct {
@@ -59,8 +70,17 @@ func RetrieveMessages(feedID string) (messages []Message, err error) {
 			return
 		}
 		defer resp.Body.Close()
-		d, err = DecodeFeed(resp.Body)
+		var r io.Reader = resp.Body
+		var de DebugError
+		if DEBUG {
+			r = io.TeeReader(r, &de.DebugBody)
+		}
+		d, err = DecodeFeed(r)
 		if err != nil {
+			if DEBUG {
+				de.Err = err
+				err = de
+			}
 			return
 		}
 		messages = append(messages, d.Response.FeedMessageResponse.Messages.Message...)
