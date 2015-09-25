@@ -70,6 +70,10 @@ func RetrieveMessages(feedID string) (messages []Message, err error) {
 			return
 		}
 		defer resp.Body.Close()
+		if resp.StatusCode/100 != 2 {
+			err = fmt.Errorf("HTTP status: %s", resp.Status)
+			return
+		}
 		var r io.Reader = resp.Body
 		var de DebugError
 		if DEBUG {
