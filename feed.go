@@ -7,6 +7,7 @@ package spot
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -36,6 +37,28 @@ func (e DebugError) Error() string {
 	return fmt.Sprintf("%s: %s", e.Err, e.DebugBody.Bytes())
 }
 
+type MessageList []Message
+
+func (m *MessageList) UnmarshalJSON(b []byte) error {
+	if len(b) == 0 {
+		return errors.New("JSON body too short")
+	}
+	switch b[0] {
+	case '[':
+		var into []Message // NB: into is not of type MessageList, as that would result in infinite recursion
+		err := json.Unmarshal(b, &into)
+		*m = into
+		return err
+	case '{':
+		var into Message
+		err := json.Unmarshal(b, &into)
+		*m = []Message{into}
+		return err
+	default:
+		return errors.New("bad JSON for MessageList")
+	}
+}
+
 type Feed struct {
 	Response struct {
 		Errors struct {
@@ -55,7 +78,7 @@ type Feed struct {
 			TotalCount   int
 			AcivityCount int
 			Messages     struct {
-				Message []Message
+				Message MessageList
 			}
 		}
 	}
