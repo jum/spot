@@ -29,12 +29,12 @@ func (e Error) Error() string {
 }
 
 type DebugError struct {
-	Err       error
+	error
 	DebugBody bytes.Buffer
 }
 
 func (e DebugError) Error() string {
-	return fmt.Sprintf("%s: %s", e.Err, e.DebugBody.Bytes())
+	return fmt.Sprintf("%s: %s", e.error, e.DebugBody.Bytes())
 }
 
 type MessageList []Message
@@ -105,7 +105,7 @@ func RetrieveMessages(feedID string) (messages []Message, err error) {
 		d, err = DecodeFeed(r)
 		if err != nil {
 			if DEBUG {
-				de.Err = err
+				de.error = err
 				err = de
 			}
 			return
